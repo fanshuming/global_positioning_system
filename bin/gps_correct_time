@@ -1,0 +1,58 @@
+#!/bin/sh
+
+ret=0
+
+gps_correct() {
+	lsmod | grep pps
+	ret=$?
+	if [ $ret -eq 0 ];then
+		echo "pps driver have been in kernel."
+		/usr/bin/ntpd -c /etc/ntp.conf -g
+		#/usr/bin/ntpd -c /etc/ntp.conf -D 1 -g
+	else
+		echo "pps driver doesn't in kernel. install the ko module in kernel..."
+		/sbin/insmod  /lib/modules/4.14.40-rt29-gd5443cbd3b/kernel/drivers/pps-gpio.ko
+		/sbin/insmod  /lib/modules/4.14.40-rt29-gd5443cbd3b/kernel/drivers/pps-gpio.ko
+		/sbin/insmod  /lib/modules/4.14.40-rt29-gd5443cbd3b/kernel/drivers/pps-gpio.ko
+		sleep 1
+		
+		lsmod | grep pps
+		ret=$?
+		if [ $ret -eq 0 ];then
+			echo "the pps ko module install success."
+			/usr/bin/ntpd -c /etc/ntp.conf -D 1 -g
+		else
+			echo "the pps ko module install fail."
+			echo "can not correct time by gps."
+		fi
+	fi
+	echo "run result $ret" 
+}
+
+gps_stop_correct() {
+	/bin/pidof ntpd
+	ret=$?
+    if [ $ret -eq 0 ];then
+		echo "stop the gps correct time..."
+		/bin/kill -9 $(/bin/pidof ntpd)
+	else
+		echo "the gps correct is not running now."
+    fi
+}
+
+case "$1" in
+    start)
+    echo "gps correct time ..."
+    gps_correct
+    ;;
+    stop)
+    echo "Stop gps correct ..."
+    gps_stop_correct
+    ;;
+    *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

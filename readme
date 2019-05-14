@@ -1,0 +1,89 @@
+This NIIC devlop for gps sdk 
+
+1.how to compile
+if you compiler file arm-linux-gnueabihf-gcc path is:
+/home/fan/ti-processor-sdk-linux-rt-am335x-evm-05.00.00.15/linux-devkit/sysroots/x86_64-arago-linux/usr/bin/arm-linux-gnueabihf-gcc
+
+then:
+set you compiler "arm-linux-gnueabihf-gcc"  path to env like this:
+export PATH=/home/fan/ti-processor-sdk-linux-rt-am335x-evm-05.00.00.15/linux-devkit/sysroots/x86_64-arago-linux/usr/bin:$PATH
+
+do this:
+make
+make install
+
+
+├── bin         ->runable file in this diretory
+├── config      ->ntp config file to config ntp
+├── include
+├── ko
+├── lib
+├── Makefile
+├── README
+└── src
+
+├── bin         ->runable file in this diretory
+├── configure   ->json file to config avalible gpio
+├── include     ->head file *.h in this directory
+├── lib         ->so file in this directory
+├── Makefile
+├── readme
+└── src         -> source file in this folder
+
+
+
+2.how to test gps module
+
+when compile completed a test file "_gps_test" file will generate in this "bin" directory
+
+just run ./_gps_test
+
+to test gps module
+
+3. how to used gps module sdk
+
+get the file include/_gps.h and lib/lib_gps.so 
+
+this gps ability can be find in the head file include/_gps.h
+
+and the src/_gps_test.c is the example how to use the gps module.
+
+
+
+1. 设置系统时间指令
+date -s "2019-04-17 05:17:50"
+
+2. ln -s /dev/ttyS1 /dev/gps1
+    ln -s /dev/pps1 /dev/gpspps1
+
+3. ntpd -c /etc/ntp.conf 
+
+4.  insmod /lib/modules/4.14.40-rt29-gd5443cbd3b/pps-ktimer.ko 
+     insmod /lib/modules/4.14.40-rt29-gd5443cbd3b/pps-ldisc.ko 
+     insmod /lib/modules/4.14.40-rt29-gd5443cbd3b/pps-gpio.ko 
+
+5.  ppstest /dev/pps1 
+
+6. watch ntpq -p
+
+7. ntpd  -D 2
+
+8.
+root@NECRO:~# cat /etc/ntp.conf 
+# /etc/ntp.conf, configuration for ntpd; see ntp.conf(5) for help
+
+#Changes recquired to use pps synchonisation as explained in documentation:
+#http://www.ntp.org/ntpfaq/NTP-s-config-adv.htm#AEN3918
+
+# NMEA refclock driver directly from serial port
+server 127.127.20.1 mode 17 minpoll 4 iburst prefer true
+fudge 127.127.20.1 flag1 1 flag2 0 flag3 0 flag4 1 time1 0.00 refid GPS
+# ATOM PPS driver directly from interrupt through /dev/pps1
+server 127.127.22.1 minpoll 4 maxpoll 4 iburst true
+fudge 127.127.22.1 flag1 1 flag2 0 flag3 1 flag4 1 time1 0.0 refid PPS
+
+
+9.hwclock –w 
+把时间写入CMOS
+
+10.ntpd  -g 取消大于1000s错误

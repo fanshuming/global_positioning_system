@@ -1,0 +1,35 @@
+#!/bin/sh
+
+ret=0
+waitcnt=0
+
+cat /dev/ttyS1 9600 > /tmp/gps_test.log &
+
+cat /tmp/gps_test.log | grep GNGLL | grep A
+
+ret=$?
+
+while [ $ret -ne "0" ]
+do
+	cat /tmp/gps_test.log | grep GNGLL | grep A
+
+	ret=$?
+	if [ $waitcnt -gt "300" ];then
+		echo "GPS can not correct location"
+		echo "FAIL!"
+		exit 1
+	fi
+	waitcnt=`expr $waitcnt + 3`
+	echo "wait $waitcnt sends"
+	sleep 3
+
+done
+
+kill -9 $(pidof cat)
+
+sleep 2
+
+rm -f /tmp/gps_test.log
+
+echo "PASS!"
+
